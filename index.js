@@ -4,18 +4,13 @@ let url = 'http://www.omdbapi.com/';
 
 const container = document.querySelector('.movieContainer');
 
-//config object for autocomplete component
-createAutoComplete({
-    root: document.querySelector(".autocomplete"),
+const autoCompleteConfig = {
     renderOption: (movie) => {
         const imgSrc = movie.Poster === 'N/A' ? '' : movie.Poster;
         return `
          <img src="${imgSrc}" />
          ${movie.Title} (${movie.Year})
          `;
-    },
-    onOptionSelect: (movie) => {
-        onMovieSelect(movie);
     },
     inputValue: (movie) => {
         return movie.Title;
@@ -33,19 +28,36 @@ createAutoComplete({
         return response.data.Search;
     }
 
+};
+
+//config object for autocomplete component
+createAutoComplete({
+    root: document.querySelector("#left-autocomplete"),
+    onOptionSelect: (movie) => {
+        document.querySelector('.tutorial').classList.add('is-hidden');
+        onMovieSelect(movie, document.querySelector('#left-summary'));
+    },
+    ...autoCompleteConfig
+});
+createAutoComplete({
+    root: document.querySelector("#right-autocomplete"),
+    onOptionSelect: (movie) => {
+        document.querySelector('.tutorial').classList.add('is-hidden');
+        onMovieSelect(movie, document.querySelector('#right-summary'));
+    },
+    ...autoCompleteConfig
 });
 
-
 // fetch movie detail when an option is selected
-const onMovieSelect = async (movie) => {
+// also inject the html into summaryElement
+const onMovieSelect = async (movie, summaryElement) => {
     const response = await axios.get(url, {
         params: {
             apikey: key,
             i: movie.imdbID,
         }
     });
-    const summary = document.querySelector('#summary');
-    summary.innerHTML = movieTemplate(response.data);
+    summaryElement.innerHTML = movieTemplate(response.data);
 }
 
 const movieTemplate = (movieDetail) => {
@@ -71,10 +83,6 @@ const movieTemplate = (movieDetail) => {
         <article class="notification is-primary">
             <p><strong>${movieDetail.BoxOffice}</strong></p> 
             <p><small>BoxOffice</small></p>
-        </article>
-        <article class="notification is-primary">
-            <p><strong>${movieDetail.MetaScore}</strong></p> 
-            <p><small>MetaScore<small></p>
         </article>
         <article class="notification is-primary">
             <p><strong>${movieDetail.imdbRating}</strong></p> 
