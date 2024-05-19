@@ -4,23 +4,44 @@ let url = 'http://www.omdbapi.com/';
 
 const container = document.querySelector('.movieContainer');
 
+//config object for autocomplete component
+createAutoComplete({
+    root: document.querySelector(".autocomplete"),
+    renderOption: (movie) => {
+        const imgSrc = movie.Poster === 'N/A' ? '' : movie.Poster;
+        return `
+         <img src="${imgSrc}" />
+         ${movie.Title} (${movie.Year})
+         `;
+    },
+    onOptionSelect: (movie) => {
+        onMovieSelect(movie);
+    },
+    inputValue: (movie) => {
+        return movie.Title;
+    },
+    fetchData: async (searchTerm) => {
+        const response = await axios.get(url, {
+            params: {
+                apikey: key,
+                s: searchTerm,
+                page: "1"
+            }
+        });
+        if (response.data.Error)
+            return [];
+        return response.data.Search;
+    }
 
-createAutoComplete({
-    root: document.querySelector(".autocomplete")
-});
-createAutoComplete({
-    root: document.querySelector(".autocomplete-two")
-});
-createAutoComplete({
-    root: document.querySelector(".autocomplete-three")
 });
 
-//This function is executed when the movie is clicked
+
+// fetch movie detail when an option is selected
 const onMovieSelect = async (movie) => {
     const response = await axios.get(url, {
         params: {
             apikey: key,
-            i: movie.imdbID, //making the search using the imdbID on the movie object
+            i: movie.imdbID,
         }
     });
     const summary = document.querySelector('#summary');
@@ -65,19 +86,3 @@ const movieTemplate = (movieDetail) => {
         </article>
     `
 }
-
-
-
-
-//HTML that we wish to generate
-// <div class="dropdown is-active">
-// <input type="text" class="movieA"/>
-// <div class="dropdown-menu">
-//   <div class="dropdown-content">
-//     <a href="" class="dropdown-item">Movie #1</a>
-//     <a href="" class="dropdown-item">Movie #2</a>
-//     <a href="" class="dropdown-item">Movie #3</a>
-//     <a href="" class="dropdown-item">Movie #4</a>
-//   </div>
-// </div>
-// </div>
